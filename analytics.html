@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics - GradeCalc</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --black: #000000;
+            --dark-gray: #0a0a0a;
+            --darker-gray: #141414;
+            --electric-blue: #00d4ff;
+            --dark-blue: #0066cc;
+            --blue-glow: rgba(0, 212, 255, 0.3);
+            --border-color: #1a1a1a;
+            --border-blue: #003d66;
+            --text-muted: #4d4d4d;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--black);
+            color: var(--electric-blue);
+            line-height: 1.6;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -320px;
+            width: 320px;
+            height: 100vh;
+            background: var(--dark-gray);
+            border-right: 1px solid var(--border-blue);
+            z-index: 1000;
+            transition: left 0.3s ease;
+            overflow-y: auto;
+        }
+
+        .sidebar.active { left: 0; }
+
+        .sidebar-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sidebar-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--electric-blue);
+        }
+
+        .close-btn {
+            width: 36px;
+            height: 36px;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--electric-blue);
+            cursor: pointer;
+            font-size: 24px;
+        }
+
+        .sidebar-nav { padding: 16px; }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            margin-bottom: 4px;
+            border-radius: 10px;
+            color: #66e0ff;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: var(--darker-gray);
+            color: var(--electric-blue);
+        }
+
+        .nav-item.active {
+            background: var(--darker-gray);
+            border-color: var(--electric-blue);
+        }
+
+        .nav-divider {
+            height: 1px;
+            background: var(--border-color);
+            margin: 16px 0;
+        }
+
+        .sidebar-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+
+        .sidebar-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .top-bar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--dark-gray);
+            border-bottom: 1px solid var(--border-blue);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .menu-btn {
+            width: 44px;
+            height: 44px;
+            background: var(--darker-gray);
+            border: 1px solid var(--dark-blue);
+            border-radius: 10px;
+            color: var(--electric-blue);
+            cursor: pointer;
+            font-size: 24px;
+        }
+
+        .page-title {
+            flex: 1;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: #0f0f0f;
+            border: 1px solid var(--border-blue);
+            border-radius: 14px;
+            padding: 24px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--electric-blue);
+            margin-bottom: 8px;
+        }
+
+        .stat-detail {
+            font-size: 14px;
+            color: #66e0ff;
+        }
+
+        .chart-card {
+            background: #0f0f0f;
+            border: 1px solid var(--border-blue);
+            border-radius: 14px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .chart-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            color: var(--electric-blue);
+        }
+
+        .progress-bar-container {
+            margin-bottom: 20px;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: var(--darker-gray);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--dark-blue), var(--electric-blue));
+            border-radius: 6px;
+            transition: width 0.5s ease;
+        }
+
+        .trend-graph {
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+            height: 200px;
+            padding: 20px 0;
+        }
+
+        .trend-bar {
+            flex: 1;
+            background: linear-gradient(to top, var(--dark-blue), var(--electric-blue));
+            border-radius: 6px 6px 0 0;
+            position: relative;
+            transition: all 0.3s ease;
+            min-height: 20px;
+        }
+
+        .trend-bar:hover {
+            opacity: 0.8;
+        }
+
+        .trend-label {
+            position: absolute;
+            bottom: -25px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .trend-value {
+            position: absolute;
+            top: -25px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--electric-blue);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { width: 100%; left: -100%; }
+            .stats-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2 class="sidebar-title">GradeCalc</h2>
+            <button class="close-btn" id="closeSidebar">×</button>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="index.html" class="nav-item">
+                <span>📊</span><span>GPA Calculator</span>
+            </a>
+            <a href="cgpa.html" class="nav-item">
+                <span>📈</span><span>CGPA Tracker</span>
+            </a>
+            <a href="goals.html" class="nav-item">
+                <span>🎯</span><span>Academic Goals</span>
+            </a>
+            <a href="analytics.html" class="nav-item active">
+                <span>📉</span><span>Analytics</span>
+            </a>
+            <div class="nav-divider"></div>
+            <a href="guides.html" class="nav-item">
+                <span>📚</span><span>Grading Guides</span>
+            </a>
+            <a href="about.html" class="nav-item">
+                <span>ℹ️</span><span>About</span>
+            </a>
+        </nav>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="top-bar">
+        <button class="menu-btn" id="menuBtn">☰</button>
+        <h1 class="page-title">Analytics</h1>
+    </div>
+
+    <div class="main-content">
+        <div id="dataAvailable">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Current CGPA</div>
+                    <div class="stat-value" id="currentCGPA">0.00</div>
+                    <div class="stat-detail">Cumulative Grade Point Average</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Best Semester</div>
+                    <div class="stat-value" id="bestSemester">-</div>
+                    <div class="stat-detail" id="bestSemesterGPA">No data available</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Worst Semester</div>
+                    <div class="stat-value" id="worstSemester">-</div>
+                    <div class="stat-detail" id="worstSemesterGPA">No data available</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total Credits</div>
+                    <div class="stat-value" id="totalCredits">0</div>
+                    <div class="stat-detail">Credits Completed</div>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <h3 class="chart-title">Progress Tracking</h3>
+                <div class="progress-bar-container">
+                    <div class="progress-label">
+                        <span>Progress to 4.0 GPA</span>
+                        <span id="progressPercent">0%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-label">
+                        <span>Credits Progress (Target: 120)</span>
+                        <span id="creditsPercent">0%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="creditsFill" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <h3 class="chart-title">Semester GPA Trend</h3>
+                <div class="trend-graph" id="trendGraph"></div>
+            </div>
+
+            <div class="chart-card">
+                <h3 class="chart-title">Performance Summary</h3>
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid var(--border-color);">
+                            <th style="padding: 12px; text-align: left; color: #66e0ff;">Semester</th>
+                            <th style="padding: 12px; text-align: left; color: #66e0ff;">GPA</th>
+                            <th style="padding: 12px; text-align: left; color: #66e0ff;">Credits</th>
+                            <th style="padding: 12px; text-align: left; color: #66e0ff;">Trend</th>
+                        </tr>
+                    </thead>
+                    <tbody id="summaryTable"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="noData" class="empty-state" style="display: none;">
+            <div class="empty-state-icon">📊</div>
+            <h2 style="margin-bottom: 16px; color: var(--electric-blue);">No Data Available</h2>
+            <p style="font-size: 16px; margin-bottom: 24px;">Start by adding semesters in the CGPA Tracker to view your analytics.</p>
+            <a href="cgpa.html" style="display: inline-block; padding: 12px 24px; background: var(--electric-blue); color: var(--black); border-radius: 10px; text-decoration: none; font-weight: 600;">Go to CGPA Tracker</a>
+        </div>
+    </div>
+
+    <script>
+        // Sidebar
+        document.getElementById('menuBtn').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.add('active');
+            document.getElementById('sidebarOverlay').classList.add('active');
+        });
+
+        document.getElementById('closeSidebar').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.remove('active');
+            document.getElementById('sidebarOverlay').classList.remove('active');
+        });
+
+        document.getElementById('sidebarOverlay').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.remove('active');
+            document.getElementById('sidebarOverlay').classList.remove('active');
+        });
+
+        // Load and display analytics
+        function loadAnalytics() {
+            const savedSemesters = localStorage.getItem('semesters');
+            
+            if (!savedSemesters) {
+                document.getElementById('dataAvailable').style.display = 'none';
+                document.getElementById('noData').style.display = 'block';
+                return;
+            }
+
+            const semesters = JSON.parse(savedSemesters);
+            
+            if (semesters.length === 0) {
+                document.getElementById('dataAvailable').style.display = 'none';
+                document.getElementById('noData').style.display = 'block';
+                return;
+            }
+
+            // Calculate CGPA
+            let totalPoints = 0;
+            let totalCredits = 0;
+            semesters.forEach(sem => {
+                const gpa = parseFloat(sem.gpa) || 0;
+                const credits = parseFloat(sem.credits) || 0;
+                totalPoints += gpa * credits;
+                totalCredits += credits;
+            });
+
+            const cgpa = totalCredits > 0 ? totalPoints / totalCredits : 0;
+
+            // Find best and worst semesters
+            const validSems = semesters.filter(s => s.gpa && s.credits);
+            const gpas = validSems.map(s => parseFloat(s.gpa));
+            const bestGPA = Math.max(...gpas);
+            const worstGPA = Math.min(...gpas);
+            const bestIndex = validSems.findIndex(s => parseFloat(s.gpa) === bestGPA);
+            const worstIndex = validSems.findIndex(s => parseFloat(s.gpa) === worstGPA);
+
+            // Update stats
+            document.getElementById('currentCGPA').textContent = cgpa.toFixed(2);
+            document.getElementById('totalCredits').textContent = totalCredits.toFixed(0);
+            
+            if (bestIndex !== -1) {
+                document.getElementById('bestSemester').textContent = `Sem ${bestIndex + 1}`;
+                document.getElementById('bestSemesterGPA').textContent = `GPA: ${bestGPA.toFixed(2)}`;
+            }
+            
+            if (worstIndex !== -1) {
+                document.getElementById('worstSemester').textContent = `Sem ${worstIndex + 1}`;
+                document.getElementById('worstSemesterGPA').textContent = `GPA: ${worstGPA.toFixed(2)}`;
+            }
+
+            // Progress bars
+            const gpaProgress = (cgpa / 4.0) * 100;
+            const creditsProgress = (totalCredits / 120) * 100;
+            
+            document.getElementById('progressFill').style.width = `${Math.min(gpaProgress, 100)}%`;
+            document.getElementById('progressPercent').textContent = `${gpaProgress.toFixed(1)}%`;
+            document.getElementById('creditsFill').style.width = `${Math.min(creditsProgress, 100)}%`;
+            document.getElementById('creditsPercent').textContent = `${creditsProgress.toFixed(1)}%`;
+
+            // Trend graph
+            const trendGraph = document.getElementById('trendGraph');
+            const maxGPA = Math.max(...gpas, 4.0);
+            
+            trendGraph.innerHTML = validSems.map((sem, index) => {
+                const gpa = parseFloat(sem.gpa) || 0;
+                const height = (gpa / maxGPA) * 100;
+                return `
+                    <div class="trend-bar" style="height: ${height}%">
+                        <div class="trend-value">${gpa.toFixed(1)}</div>
+                        <div class="trend-label">S${index + 1}</div>
+                    </div>
+                `;
+            }).join('');
+
+            // Summary table
+            const tableBody = document.getElementById('summaryTable');
+            tableBody.innerHTML = validSems.map((sem, index) => {
+                const gpa = parseFloat(sem.gpa) || 0;
+                const prevGPA = index > 0 ? parseFloat(validSems[index - 1].gpa) || 0 : gpa;
+                const trend = gpa > prevGPA ? '📈 Up' : gpa < prevGPA ? '📉 Down' : '➡️ Same';
+                
+                return `
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                        <td style="padding: 12px;">Semester ${index + 1}</td>
+                        <td style="padding: 12px;">${gpa.toFixed(2)}</td>
+                        <td style="padding: 12px;">${sem.credits}</td>
+                        <td style="padding: 12px;">${trend}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        loadAnalytics();
+    </script>
+</body>
+</html>

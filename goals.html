@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic Goals - GradeCalc</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --black: #000000;
+            --dark-gray: #0a0a0a;
+            --darker-gray: #141414;
+            --electric-blue: #00d4ff;
+            --dark-blue: #0066cc;
+            --blue-glow: rgba(0, 212, 255, 0.3);
+            --border-color: #1a1a1a;
+            --border-blue: #003d66;
+            --text-muted: #4d4d4d;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--black);
+            color: var(--electric-blue);
+            line-height: 1.6;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -320px;
+            width: 320px;
+            height: 100vh;
+            background: var(--dark-gray);
+            border-right: 1px solid var(--border-blue);
+            z-index: 1000;
+            transition: left 0.3s ease;
+            overflow-y: auto;
+        }
+
+        .sidebar.active { left: 0; }
+
+        .sidebar-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sidebar-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--electric-blue);
+        }
+
+        .close-btn {
+            width: 36px;
+            height: 36px;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--electric-blue);
+            cursor: pointer;
+            font-size: 24px;
+        }
+
+        .sidebar-nav { padding: 16px; }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            margin-bottom: 4px;
+            border-radius: 10px;
+            color: #66e0ff;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: var(--darker-gray);
+            color: var(--electric-blue);
+        }
+
+        .nav-item.active {
+            background: var(--darker-gray);
+            border-color: var(--electric-blue);
+        }
+
+        .nav-divider {
+            height: 1px;
+            background: var(--border-color);
+            margin: 16px 0;
+        }
+
+        .sidebar-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+
+        .sidebar-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .top-bar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--dark-gray);
+            border-bottom: 1px solid var(--border-blue);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .menu-btn {
+            width: 44px;
+            height: 44px;
+            background: var(--darker-gray);
+            border: 1px solid var(--dark-blue);
+            border-radius: 10px;
+            color: var(--electric-blue);
+            cursor: pointer;
+            font-size: 24px;
+        }
+
+        .page-title {
+            flex: 1;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .main-content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+
+        .input-card {
+            background: #0f0f0f;
+            border: 1px solid var(--border-blue);
+            border-radius: 14px;
+            padding: 32px;
+            margin-bottom: 32px;
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--electric-blue);
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--dark-gray);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--electric-blue);
+            font-size: 16px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--electric-blue);
+            box-shadow: 0 0 0 3px var(--blue-glow);
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 14px 24px;
+            background: var(--electric-blue);
+            border: none;
+            border-radius: 10px;
+            color: var(--black);
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #66e0ff;
+            transform: translateY(-2px);
+        }
+
+        .result-card {
+            background: linear-gradient(135deg, var(--dark-blue), var(--electric-blue));
+            border-radius: 14px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 32px;
+            color: white;
+        }
+
+        .result-card h2 {
+            font-size: 18px;
+            margin-bottom: 16px;
+            opacity: 0.9;
+        }
+
+        .required-gpa {
+            font-size: 64px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+        }
+
+        .message {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .scenarios-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+            margin-top: 32px;
+        }
+
+        .scenario-card {
+            background: #0f0f0f;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .scenario-card.achievable {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .scenario-card.not-achievable {
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        .scenario-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .scenario-gpa {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .scenario-status {
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { width: 100%; left: -100%; }
+            .input-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2 class="sidebar-title">GradeCalc</h2>
+            <button class="close-btn" id="closeSidebar">×</button>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="index.html" class="nav-item">
+                <span>📊</span><span>GPA Calculator</span>
+            </a>
+            <a href="cgpa.html" class="nav-item">
+                <span>📈</span><span>CGPA Tracker</span>
+            </a>
+            <a href="goals.html" class="nav-item active">
+                <span>🎯</span><span>Academic Goals</span>
+            </a>
+            <a href="analytics.html" class="nav-item">
+                <span>📉</span><span>Analytics</span>
+            </a>
+            <div class="nav-divider"></div>
+            <a href="guides.html" class="nav-item">
+                <span>📚</span><span>Grading Guides</span>
+            </a>
+            <a href="about.html" class="nav-item">
+                <span>ℹ️</span><span>About</span>
+            </a>
+        </nav>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="top-bar">
+        <button class="menu-btn" id="menuBtn">☰</button>
+        <h1 class="page-title">Academic Goals</h1>
+    </div>
+
+    <div class="main-content">
+        <div class="input-card">
+            <h2 style="margin-bottom: 24px; font-size: 20px;">Calculate Required GPA</h2>
+            <p style="color: #66e0ff; margin-bottom: 24px;">Enter your current academic standing and target CGPA to determine the required semester GPA.</p>
+            
+            <div class="input-grid">
+                <div class="input-group">
+                    <label>Current CGPA</label>
+                    <input type="number" id="currentCGPA" placeholder="3.50" step="0.01" min="0" max="5">
+                </div>
+                <div class="input-group">
+                    <label>Completed Credits</label>
+                    <input type="number" id="currentCredits" placeholder="60" step="0.5" min="0">
+                </div>
+                <div class="input-group">
+                    <label>Target CGPA</label>
+                    <input type="number" id="targetCGPA" placeholder="3.75" step="0.01" min="0" max="5">
+                </div>
+                <div class="input-group">
+                    <label>Remaining Credits</label>
+                    <input type="number" id="remainingCredits" placeholder="30" step="0.5" min="0">
+                </div>
+            </div>
+            
+            <button class="btn-primary" onclick="calculate()">Calculate Required GPA</button>
+        </div>
+
+        <div id="results" style="display: none;">
+            <div class="result-card">
+                <h2>Required Semester GPA</h2>
+                <div class="required-gpa" id="requiredGPA">0.00</div>
+                <div class="message" id="message"></div>
+            </div>
+
+            <div class="input-card">
+                <h3 style="margin-bottom: 20px;">Grade Scenarios</h3>
+                <p style="color: #66e0ff; margin-bottom: 24px;">Different grade combinations to achieve your target CGPA</p>
+                <div class="scenarios-grid" id="scenarios"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sidebar
+        document.getElementById('menuBtn').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.add('active');
+            document.getElementById('sidebarOverlay').classList.add('active');
+        });
+
+        document.getElementById('closeSidebar').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.remove('active');
+            document.getElementById('sidebarOverlay').classList.remove('active');
+        });
+
+        document.getElementById('sidebarOverlay').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.remove('active');
+            document.getElementById('sidebarOverlay').classList.remove('active');
+        });
+
+        function calculate() {
+            const currentCGPA = parseFloat(document.getElementById('currentCGPA').value) || 0;
+            const currentCredits = parseFloat(document.getElementById('currentCredits').value) || 0;
+            const targetCGPA = parseFloat(document.getElementById('targetCGPA').value) || 0;
+            const remainingCredits = parseFloat(document.getElementById('remainingCredits').value) || 0;
+
+            if (!currentCredits || !remainingCredits || !targetCGPA) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            const currentPoints = currentCGPA * currentCredits;
+            const targetPoints = targetCGPA * (currentCredits + remainingCredits);
+            const requiredPoints = targetPoints - currentPoints;
+            const requiredGPA = requiredPoints / remainingCredits;
+
+            document.getElementById('requiredGPA').textContent = requiredGPA.toFixed(2);
+
+            let message = '';
+            if (requiredGPA > 4.0) {
+                message = '⚠️ This target is not achievable with a 4.0 scale. Please adjust your target CGPA.';
+            } else if (requiredGPA > 3.8) {
+                message = '🔥 Requires exceptional performance. Maintain focus and consistency.';
+            } else if (requiredGPA > 3.0) {
+                message = '✅ Achievable with consistent effort. Stay dedicated to your studies.';
+            } else if (requiredGPA >= 0) {
+                message = '👍 This target is highly achievable. Maintain good study habits.';
+            } else {
+                message = '✨ Your current CGPA already exceeds the target. Excellent work!';
+            }
+
+            document.getElementById('message').textContent = message;
+            document.getElementById('results').style.display = 'block';
+
+            generateScenarios(requiredGPA);
+        }
+
+        function generateScenarios(required) {
+            const scenarios = [
+                { name: "All A's", gpa: 4.0 },
+                { name: "All A-'s", gpa: 3.7 },
+                { name: "All B+'s", gpa: 3.3 },
+                { name: "All B's", gpa: 3.0 },
+                { name: "Mix A's & B's", gpa: 3.5 }
+            ];
+
+            const container = document.getElementById('scenarios');
+            container.innerHTML = scenarios.map(scenario => {
+                const achievable = scenario.gpa >= required;
+                return `
+                    <div class="scenario-card ${achievable ? 'achievable' : 'not-achievable'}">
+                        <div class="scenario-title">${scenario.name}</div>
+                        <div class="scenario-gpa" style="color: ${achievable ? '#10b981' : '#ef4444'}">${scenario.gpa.toFixed(1)}</div>
+                        <div class="scenario-status">${achievable ? '✅ Achievable' : '❌ Not Sufficient'}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - GradeCalc</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --black: #000000;
+            --dark-gray: #0a0a0a;
+            --darker-gray: #141414;
+            --electric-blue: #00d4ff;
+            --dark-blue: #0066cc;
+            --border-color: #1a1a1a;
+            --border-blue: #003d66;
+            --text-muted: #4d4d4d;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--black);
+            color: var(--electric-blue);
+            line-height: 1.6;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -320px;
+            width: 320px;
+            height: 100vh;
+            background: var(--dark-gray);
+            border-right: 1px solid var(--border-blue);
+            z-index: 1000;
+            transition: left 0.3s ease;
+            overflow-y: auto;
+        }
+
+        .sidebar.active { left: 0; }
+
+        .sidebar-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sidebar-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--electric-blue);
+        }
+
+        .close-btn {
+            width: 36px;
+            height: 36px;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--electric-blue);
+            cursor: pointer;
+            font-size: 24px;
+        }
+
+        .sidebar-nav { padding: 16px; }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            margin-bottom: 4px;
+            border-radius: 10px;
+            color: #66e0ff;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: var(--darker-gray);
+            color: var(--electric-blue);
+        }
+
+        .nav-item.active {
+            background: var(--darker-gray);
+            border-color: var(--electric-blue);
+        }
+
+        .nav-divider {
+            height: 1px;
+            background: var(--border-color);
+            margin: 16px 0;
+        }
+
+        .sidebar-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+
+        .sidebar-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .top-bar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--dark-gray);
+            border-bottom: 1px solid var(--border-blue);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .menu-btn {
+            width: 44px;
+            height: 44px;
+            background: var(--darker-gray);
+            border: 1px solid var(--dark-blue);
+            border-radius: 10px;
+            color: var(--electric-blue);
+            cursor: pointer;
+            font-size: 24px;
+        }
+
+        .page-title {
+            flex: 1;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .main-content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 32px 24px 80px;
+        }
+
+        .hero-section {
+            text-align: center;
+            padding: 60px 0 40px;
+        }
+
+        .hero-title {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, var(--electric-blue), var(--dark-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 20px;
+            color: #66e0ff;
+            margin-bottom: 12px;
+        }
+
+        .established-date {
+            font-size: 14px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .content-card {
+            background: #0f0f0f;
+            border: 1px solid var(--border-blue);
+            border-radius: 14px;
+            padding: 32px;
+            margin-bottom: 32px;
+        }
+
+        h2 {
+            font-size: 24px;
+            margin-bottom: 16px;
+            color: var(--electric-blue);
+        }
+
+        p {
+            color: #66e0ff;
+            margin-bottom: 16px;
+            line-height: 1.8;
+        }
+
+        ul {
+            margin-left: 24px;
+            margin-bottom: 16px;
+            color: #66e0ff;
+        }
+
+        li {
+            margin-bottom: 12px;
+            line-height: 1.7;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { width: 100%; left: -100%; }
+            .hero-title { font-size: 36px; }
+            .content-card { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2 class="sidebar-title">GradeCalc</h2>
+            <button class="close-btn" id="closeSidebar">×</button>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="index.html" class="nav-item">
+                <span>📊</span><span>GPA Calculator</span>
+            </a>
+            <a href="cgpa.html" class="nav-item">
+                <span>📈</span><span>CGPA Tracker</span>
+            </a>
+            <a href="goals.html" class="nav-item">
+                <span>🎯</span><span>Academic Goals</span>
+            </a>
+            <a href="analytics.html" class="nav-item">
+                <span>📉</span><span>Analytics</span>
+            </a>
+            <div class="nav-divider"></div>
+            <a href="guides.html" class="nav-item">
+                <span>📚</span><span>Grading Guides</span>
+            </a>
+            <a href="about.html" class="nav-item active">
+                <span>ℹ️</span><span>About</span>
+            </a>
+        </nav>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="top-bar">
+        <button class="menu-btn" id="menuBtn">☰</button>
+        <h1 class="page-title">About GradeCalc</h1>
+    </div>
+
+    <div class="main-content">
+        <div class="hero-section">
+            <h1 class="hero-title">GradeCalc</h1>
+            <p class="hero-subtitle">Studies Made Easier</p>
+            <p class="established-date">Established February 2026</p>
+        </div>
+
+        <div class="content-card">
+            <h2>Our Mission</h2>
+            <p>GradeCalc was created by <strong>SME (Studies Made Easier)</strong> with a singular purpose: to simplify grade calculations for students worldwide. We provide accurate, instant GPA calculations with complete privacy and zero cost.</p>
+        </div>
+
+        <div class="content-card">
+            <h2>Key Features</h2>
+            <ul>
+                <li><strong>Instant GPA Calculation:</strong> Real-time computation as you enter course information</li>
+                <li><strong>Multiple Grading Systems:</strong> Support for 4.0, 5.0, 10-point, and percentage scales</li>
+                <li><strong>CGPA Tracking:</strong> Monitor cumulative GPA across all semesters</li>
+                <li><strong>Goal Planning:</strong> Calculate required GPA to achieve target CGPA</li>
+                <li><strong>Analytics Dashboard:</strong> Visual insights into academic performance</li>
+                <li><strong>Save & Export:</strong> Save profiles and export professional PDF reports</li>
+                <li><strong>100% Private:</strong> All data remains on your device</li>
+                <li><strong>Works Offline:</strong> PWA functionality for offline access</li>
+            </ul>
+        </div>
+
+        <div class="content-card">
+            <h2>Privacy & Security</h2>
+            <p><strong>Your privacy is our highest priority.</strong> GradeCalc operates entirely in your browser. We do not collect, store, or transmit any data to external servers. All calculations occur locally on your device.</p>
+            <ul>
+                <li>No account required</li>
+                <li>No data collection or tracking</li>
+                <li>No cookies or analytics</li>
+                <li>Complete control over your data</li>
+            </ul>
+        </div>
+
+        <div class="content-card">
+            <h2>Our Commitment</h2>
+            <p><strong>GradeCalc will always remain:</strong></p>
+            <ul>
+                <li><strong>100% Free:</strong> No subscriptions or hidden costs</li>
+                <li><strong>Ad-Free:</strong> No advertisements interrupting your experience</li>
+                <li><strong>Private:</strong> Complete data privacy with zero server storage</li>
+                <li><strong>Accessible:</strong> Available to all students on any device</li>
+            </ul>
+        </div>
+
+        <div class="content-card">
+            <h2>Contact Information</h2>
+            <p><strong>Organization:</strong> Studies Made Easier (SME)</p>
+            <p><strong>Established:</strong> February 2026</p>
+            <p><strong>Email:</strong> <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="f88b8d8888978a8cb89f8a999c9d9b99949bd69b9795">[email&#160;protected]</a></p>
+            <p><strong>Website:</strong> www.gradecalc.com</p>
+        </div>
+
+        <div style="text-align: center; padding: 40px 0; color: #66e0ff;">
+            <p style="font-size: 18px; margin-bottom: 8px;">Thank you for choosing GradeCalc</p>
+            <p style="font-size: 14px; color: var(--text-muted);">Studies Made Easier - Empowering Students Worldwide</p>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 16px;">© 2026 GradeCalc. All rights reserved.</p>
+        </div>
+    </div>
+
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+        document.getElementById('menuBtn').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.add('active');
+            document.getElementById('sidebarOverlay').classList.add('active');
+        });
+
+        document.getElementById('closeSidebar').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.remove('active');
+            document.getElementById('sidebarOverlay').classList.remove('active');
+        });
+
+        document.getElementById('sidebarOverlay').a

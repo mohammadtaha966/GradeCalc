@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Professional GPA and CGPA calculator for students. Calculate your grade point average with multiple grading scales.">
+    <title>GPA Calculator - GradeCalc</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Variables */
+        :root {
+            --black: #000000;
+            --dark-gray: #0a0a0a;
+            --darker-gray: #141414;
+            --electric-blue: #00d4ff;
+            --dark-blue: #0066cc;
+            --blue-glow: rgba(0, 212, 255, 0.3);
+            --border-color: #1a1a1a;
+            --border-blue: #003d66;
+            --text-muted: #4d4d4d;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--black);
+            color: var(--electric-blue);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -320px;
+            width: 320px;
+            height: 100vh;
+            background: var(--dark-gray);
+            border-right: 1px solid var(--border-blue);
+            z-index: 1000;
+            transition: left 0.3s ease;
+            overflow-y: auto;
+        }
+
+        .sidebar.active {
+            left: 0;
+            box-shadow: 0 0 50px rgba(0, 212, 255, 0.2);
+        }
+
+        .sidebar-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sidebar-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--electric-blue);
+        }
+
+        .close-btn {
+            width: 36px;
+            height: 36px;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--electric-blue);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .close-btn:hover {
+            background: var(--darker-gray);
+            border-color: var(--electric-blue);
+        }
+
+        .sidebar-nav {
+            padding: 16px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            margin-bottom: 4px;
+            border-radius: 10px;
+            color: #66e0ff;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: var(--darker-gray);
+            color: var(--electric-blue);
+            border-color: var(--border-blue);
+        }
+
+        .nav-item.active {
+            background: var(--darker-gray);
+            color: var(--electric-blue);
+            border-color: var(--electric-blue);
+        }
+
+        .nav-divider {
+            height: 1px;
+            background: var(--border-color);
+            margin: 16px 0;
+        }
+
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+
+        .sidebar-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--dark-gray);
+            border-bottom: 1px solid var(--border-blue);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .menu-btn {
+            width: 44px;
+            height: 44px;
+            background: var(--darker-gray);
+            border: 1px solid var(--dark-blue);
+            border-radius: 10px;
+            color: var(--electric-blue);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            transition: all 0.2s;
+        }
+
+        .menu-btn:hover {
+            background: #0f0f0f;
+            transform: scale(1.05);
+        }
+
+        .page-title {
+            flex: 1;
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--electric-blue);
+        }
+
+        .scale-selector {
+            padding: 10px 16px;
+            background: var(--darker-gray);
+            border: 1px solid var(--border-blue);
+            border-radius: 10px;
+            color: var(--electric-blue);
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .scale-selector:focus {
+            outline: none;
+            border-color: var(--electric-blue);
+        }
+
+        .scale-selector option {
+            background: var(--dark-gray);
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+
+        /* Result Card */
+        .result-card {
+            background: #0f0f0f;
+            border: 1px solid var(--border-blue);
+            border-radius: 14px;
+            padding: 32px;
+            margin-bottom: 32px;
+            text-align: center;
+        }
+
+        .result-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #66e0ff;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+        }
+
+        .result-value {
+            font-size: 72px;
+            font-weight: 700;
+            color: var(--electric-blue);
+            line-height: 1;
+            margin: 16px 0;
+            text-shadow: 0 0 30px var(--blue-glow);
+            transition: all 0.3s;
+        }
+
+        .result-stats {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            margin-top: 24px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--electric-blue);
+            margin-top: 4px;
+        }
+
+        /* Courses Section */
+        .courses-section {
+            background: #0f0f0f;
+            border: 1px solid var(--border-blue);
+            border-radius: 14px;
+            padding: 24px;
+            margin-bottom: 32px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--electric-blue);
+        }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: var(--electric-blue);
+            border: none;
+            border-radius: 10px;
+            color: var(--black);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #66e0ff;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: var(--darker-gray);
+            border: 1px solid var(--border-blue);
+            border-radius: 10px;
+            color: var(--electric-blue);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-secondary:hover {
+            background: #0f0f0f;
+            border-color: var(--electric-blue);
+        }
+
+        .course-card {
+            background: var(--darker-gray);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 16px;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1.5fr auto;
+            gap: 16px;
+            align-items: center;
+            transition: all 0.2s;
+        }
+
+        .course-card:hover {
+            border-color: var(--border-blue);
+        }
+
+        .course-input {
+            padding: 10px 14px;
+            background: var(--dark-gray);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--electric-blue);
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .course-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .course-input:focus {
+            outline: none;
+            border-color: var(--electric-blue);
+            box-shadow: 0 0 0 3px var(--blue-glow);
+        }
+
+        .remove-btn {
+            width: 36px;
+            height: 36px;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: #ff4444;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.2s;
+        }
+
+        .remove-btn:hover {
+            background: rgba(255, 68, 68, 0.1);
+            border-color: #ff4444;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                left: -100%;
+            }
+
+            .result-value {
+                font-size: 56px;
+            }
+
+            .result-stats {
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .course-card {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn-secondary {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-content {
+                padding: 24px 16px;
+            }
+
+            .result-value {
+                font-size: 48px;
+            }
+
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .btn-primary {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2 class="sidebar-title">GradeCalc</h2>
+            <button class="close-btn" id="closeSidebar">×</button>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <a href="index.html" class="nav-item active">
+                <span>📊</span>
+                <span>GPA Calculator</span>
+            </a>
+            
+            <a href="cgpa.html" class="nav-item">
+                <span>📈</span>
+                <span>CGPA Tracker</span>
+            </a>
+            
+            <a href="goals.html" class="nav-item">
+                <span>🎯</span>
+                <span>Academic Goals</span>
+            </a>
+            
+            <a href="analytics.html" class="nav-item">
+                <span>📉</span>
+                <span>Analytics</span>
+            </a>
+            
+            <div class="nav-divider"></div>
+            
+            <a href="guides.html" class="nav-item">
+                <span>📚</span>
+                <span>Grading Guides</span>
+            </a>
+            
+            <a href="about.html" class="nav-item">
+                <span>ℹ️</span>
+                <span>About</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Main Content -->
+    <div class="top-bar">
+        <button class="menu-btn" id="menuBtn">☰</button>
+        <h1 class="page-title">GPA Calculator</h1>
+        <select class="scale-selector" id="gradingScale">
+            <option value="4.0">4.0 Scale (US)</option>
+            <option value="5.0">5.0 Scale (Pakistan)</option>
+            <option value="percentage">Percentage</option>
+            <option value="10point">10-Point (India)</option>
+        </select>
+    </div>
+
+    <div class="main-content">
+        <!-- Result Card -->
+        <div class="result-card">
+            <div class="result-label">Current Semester GPA</div>
+            <div class="result-value" id="gpaDisplay">0.00</div>
+            <div class="result-stats">
+                <div>
+                    <div class="stat-label">Total Credits</div>
+                    <div class="stat-value" id="creditsDisplay">0</div>
+                </div>
+                <div>
+                    <div class="stat-label">Quality Points</div>
+                    <div class="stat-value" id="pointsDisplay">0.00</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Courses Section -->
+        <div class="courses-section">
+            <div class="section-header">
+                <h2 class="section-title">Course Details</h2>
+                <button class="btn-primary" onclick="addCourse()">+ Add Course</button>
+            </div>
+            <div id="coursesList">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📚</div>
+                    <div>No courses added yet</div>
+                    <p style="font-size: 14px; margin-top: 8px;">Click "Add Course" to begin calculating your GPA</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button class="btn-secondary" onclick="clearAll()">🗑️ Clear All</button>
+            <button class="btn-secondary" onclick="saveProfile()">💾 Save Profile</button>
+            <button class="btn-secondary" onclick="exportData()">📄 Export PDF</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        // Sidebar Toggle
+        const menuBtn = document.getElementById('menuBtn');
+        const sidebar = document.getElementById('sidebar');
+        const closeSidebar = document.getElementById('closeSidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+        menuBtn.addEventListener('click', () => {
+            sidebar.classList.add('active');
+            sidebarOverlay.classList.add('active');
+        });
+
+        closeSidebar.addEventListener('click', () => {
+            sidebar.classList.remove('active');
+            sidebarOverlay.classList.remove('active');
+        });
+
+        sidebarOverlay.addEventListener('click', () => {
+            sidebar.classList.remove('active');
+            sidebarOverlay.classList.remove('active');
+        });
+
+        // Calculator Logic
+        let courses = [];
+        let currentScale = '4.0';
+
+        const SCALES = {
+            '4.0': {
+                'A+': 4.0, 'A': 4.0, 'A-': 3.7,
+                'B+': 3.3, 'B': 3.0, 'B-': 2.7,
+                'C+': 2.3, 'C': 2.0, 'C-': 1.7,
+                'D+': 1.3, 'D': 1.0, 'F': 0.0
+            },
+            '5.0': {
+                'A+': 5.0, 'A': 4.5, 'B+': 4.0,
+                'B': 3.5, 'C+': 3.0, 'C': 2.5,
+                'D': 2.0, 'F': 0.0
+            },
+            'percentage': {
+                '90-100': 4.0, '80-89': 3.7, '70-79': 3.0,
+                '60-69': 2.0, '50-59': 1.0, '0-49': 0.0
+            },
+            '10point': {
+                'O': 10, 'A+': 9, 'A': 8, 'B+': 7,
+                'B': 6, 'C': 5, 'D': 4, 'E': 0
+            }
+        };
+
+        function addCourse() {
+            const id = Date.now();
+            courses.push({ id, name: '', credits: '', grade: '' });
+            render();
+        }
+
+        function removeCourse(id) {
+            courses = courses.filter(c => c.id !== id);
+            render();
+        }
+
+        function updateCourse(id, field, value) {
+            const course = courses.find(c => c.id === id);
+            if (course) {
+                course[field] = value;
+                calculate();
+            }
+        }
+
+        function render() {
+            const container = document.getElementById('coursesList');
+            
+            if (courses.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📚</div>
+                        <div>No courses added yet</div>
+                        <p style="font-size: 14px; margin-top: 8px;">Click "Add Course" to begin calculating your GPA</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = courses.map(course => `
+                <div class="course-card">
+                    <input 
+                        type="text" 
+                        class="course-input" 
+                        placeholder="Course Name"
+                        value="${course.name}"
+                        onchange="updateCourse(${course.id}, 'name', this.value)"
+                    />
+                    <input 
+                        type="number" 
+                        class="course-input" 
+                        placeholder="Credits"
+                        value="${course.credits}"
+                        min="0"
+                        step="0.5"
+                        onchange="updateCourse(${course.id}, 'credits', this.value)"
+                    />
+                    <select 
+                        class="course-input"
+                        onchange="updateCourse(${course.id}, 'grade', this.value)"
+                    >
+                        <option value="">Select Grade</option>
+                        ${Object.keys(SCALES[currentScale]).map(grade => 
+                            `<option value="${grade}" ${course.grade === grade ? 'selected' : ''}>${grade}</option>`
+                        ).join('')}
+                    </select>
+                    <button class="remove-btn" onclick="removeCourse(${course.id})">×</button>
+                </div>
+            `).join('');
+
+            calculate();
+        }
+
+        function calculate() {
+            let totalPoints = 0;
+            let totalCredits = 0;
+
+            courses.forEach(course => {
+                const credits = parseFloat(course.credits) || 0;
+                const points = SCALES[currentScale][course.grade] || 0;
+                totalPoints += points * credits;
+                totalCredits += credits;
+            });
+
+            const gpa = totalCredits > 0 ? totalPoints / totalCredits : 0;
+            
+            document.getElementById('gpaDisplay').textContent = gpa.toFixed(2);
+            document.getElementById('creditsDisplay').textContent = totalCredits.toFixed(1);
+            document.getElementById('pointsDisplay').textContent = totalPoints.toFixed(2);
+
+            // Save to localStorage
+            localStorage.setItem('courses', JSON.stringify(courses));
+        }
+
+        function clearAll() {
+            if (confirm('Are you sure you want to clear all courses?')) {
+                courses = [];
+                render();
+            }
+        }
+
+        function saveProfile() {
+            const name = prompt('Enter profile name:');
+            if (name) {
+                const profiles = JSON.parse(localStorage.getItem('profiles') || '{}');
+                profiles[name] = { courses, scale: currentScale };
+                localStorage.setItem('profiles', JSON.stringify(profiles));
+                alert('Profile saved successfully!');
+            }
+        }
+
+        function exportData() {
+            if (typeof jsPDF === 'undefined') {
+                alert('PDF export requires internet connection');
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            doc.setFontSize(20);
+            doc.setTextColor(0, 212, 255);
+            doc.text('GPA Report', 20, 20);
+
+            doc.setFontSize(12);
+            doc.setTextColor(100);
+            doc.text(`Generated: ${new Date().toLocaleDateString()}`, 20, 30);
+
+            const gpa = document.getElementById('gpaDisplay').textContent;
+            const credits = document.getElementById('creditsDisplay').textContent;
+
+            doc.setFontSize(16);
+            doc.setTextColor(0);
+            doc.text(`GPA: ${gpa}`, 20, 50);
+            doc.text(`Total Credits: ${credits}`, 20, 60);
+
+            doc.save('gpa-report.pdf');
+        }
+
+        document.getElementById('gradingScale').addEventListener('change', (e) => {
+            currentScale = e.target.value;
+            render();
+        });
+
+        // Load saved data
+        const saved = localStorage.getItem('courses');
+        if (saved) {
+            courses = JSON.parse(saved);
+        }
+        render();
+    </script>
+</body>
+</html>

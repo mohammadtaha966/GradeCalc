@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CGPA Tracker - GradeCalc</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --black: #000000;
+            --dark-gray: #0a0a0a;
+            --darker-gray: #141414;
+            --electric-blue: #00d4ff;
+            --dark-blue: #0066cc;
+            --blue-glow: rgba(0, 212, 255, 0.3);
+            --border-color: #1a1a1a;
+            --border-blue: #003d66;
+            --text-muted: #4d4d4d;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--black);
+            color: var(--electric-blue);
+            line-height: 1.6;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -320px;
+            width: 320px;
+            height: 100vh;
+            background: var(--dark-gray);
+            border-right: 1px solid var(--border-blue);
+            z-index: 1000;
+            transition: left 0.3s ease;
+            overflow-y: auto;
+        }
+
+        .sidebar.active { left: 0; }
+
+        .sidebar-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sidebar-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--electric-blue);
+        }
+
+        .close-btn {
+            width: 36px;
+            height: 36px;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--electric-blue);
+            cursor: pointer;
+            font-size: 24px;
+        }
+
+        .sidebar-nav { padding: 16px; }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            margin-bottom: 4px;
+            border-radius: 10px;
+            color: #66e0ff;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: var(--darker-gray);
+            color: var(--electric-blue);
+        }
+
+        .nav-item.active {
+            background: var(--darker-gray);
+            border-color: var(--electric-blue);
+        }
+
+        .nav-divider {
+            height: 1px;
+            background: var(--border-color);
+            margin: 16px 0;
+        }
+
+        .sidebar-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+
+        .sidebar-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .top-bar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--dark-gray);
+            border-bottom: 1px solid var(--border-blue);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .menu-btn {
+            width: 44px;
+            height: 44px;
+            background: var(--darker-gray);
+            border: 1px solid var(--dark-blue);
+            border-radius: 10px;
+            color: var(--electric-blue);
+            cursor: pointer;
+            font-size: 24px;
+        }
+
+        .page-title {
+            flex: 1;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+
+        .result-card {
+            background: #0f0f0f;
+            border: 1px solid var(--border-blue);
+            border-radius: 14px;
+            padding: 32px;
+            margin-bottom: 32px;
+            text-align: center;
+        }
+
+        .result-value {
+            font-size: 72px;
+            font-weight: 700;
+            color: var(--electric-blue);
+            text-shadow: 0 0 30px var(--blue-glow);
+            margin: 16px 0;
+        }
+
+        .semester-card {
+            background: #0f0f0f;
+            border: 1px solid var(--border-blue);
+            border-radius: 14px;
+            padding: 24px;
+            margin-bottom: 16px;
+        }
+
+        .semester-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .semester-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .course-input {
+            width: 100%;
+            padding: 10px 14px;
+            background: var(--dark-gray);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--electric-blue);
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .course-input:focus {
+            outline: none;
+            border-color: var(--electric-blue);
+        }
+
+        .btn-primary {
+            padding: 12px 24px;
+            background: var(--electric-blue);
+            border: none;
+            border-radius: 10px;
+            color: var(--black);
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-secondary {
+            padding: 12px 24px;
+            background: var(--darker-gray);
+            border: 1px solid var(--border-blue);
+            border-radius: 10px;
+            color: var(--electric-blue);
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .remove-btn {
+            padding: 8px 16px;
+            background: transparent;
+            border: 1px solid #ff4444;
+            border-radius: 8px;
+            color: #ff4444;
+            cursor: pointer;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 24px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            color: #66e0ff;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { width: 100%; left: -100%; }
+            .semester-inputs { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2 class="sidebar-title">GradeCalc</h2>
+            <button class="close-btn" id="closeSidebar">×</button>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="index.html" class="nav-item">
+                <span>📊</span><span>GPA Calculator</span>
+            </a>
+            <a href="cgpa.html" class="nav-item active">
+                <span>📈</span><span>CGPA Tracker</span>
+            </a>
+            <a href="goals.html" class="nav-item">
+                <span>🎯</span><span>Academic Goals</span>
+            </a>
+            <a href="analytics.html" class="nav-item">
+                <span>📉</span><span>Analytics</span>
+            </a>
+            <div class="nav-divider"></div>
+            <a href="guides.html" class="nav-item">
+                <span>📚</span><span>Grading Guides</span>
+            </a>
+            <a href="about.html" class="nav-item">
+                <span>ℹ️</span><span>About</span>
+            </a>
+        </nav>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="top-bar">
+        <button class="menu-btn" id="menuBtn">☰</button>
+        <h1 class="page-title">CGPA Tracker</h1>
+    </div>
+
+    <div class="main-content">
+        <div class="result-card">
+            <div style="font-size: 14px; color: #66e0ff; margin-bottom: 8px;">CUMULATIVE CGPA</div>
+            <div class="result-value" id="cgpaDisplay">0.00</div>
+            <div style="margin-top: 16px; color: #66e0ff;">
+                Total Credits: <strong id="totalCredits">0</strong> | 
+                Semesters: <strong id="totalSemesters">0</strong>
+            </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <h2 style="font-size: 18px;">Semester Details</h2>
+            <button class="btn-primary" onclick="addSemester()">+ Add Semester</button>
+        </div>
+
+        <div id="semestersList"></div>
+
+        <div class="semester-card">
+            <h3 style="margin-bottom: 16px;">Semester Breakdown</h3>
+            <table id="breakdownTable">
+                <thead>
+                    <tr>
+                        <th>Semester</th>
+                        <th>GPA</th>
+                        <th>Credits</th>
+                        <th>Cumulative CGPA</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Sidebar
+        document.getElementById('menuBtn').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.add('active');
+            document.getElementById('sidebarOverlay').classList.add('active');
+        });
+
+        document.getElementById('closeSidebar').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.remove('active');
+            document.getElementById('sidebarOverlay').classList.remove('active');
+        });
+
+        document.getElementById('sidebarOverlay').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.remove('active');
+            document.getElementById('sidebarOverlay').classList.remove('active');
+        });
+
+        // CGPA Logic
+        let semesters = [];
+
+        function addSemester() {
+            semesters.push({ id: Date.now(), gpa: '', credits: '' });
+            render();
+        }
+
+        function removeSemester(id) {
+            semesters = semesters.filter(s => s.id !== id);
+            render();
+        }
+
+        function updateSemester(id, field, value) {
+            const sem = semesters.find(s => s.id === id);
+            if (sem) {
+                sem[field] = value;
+                calculate();
+            }
+        }
+
+        function render() {
+            const container = document.getElementById('semestersList');
+            
+            if (semesters.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 40px; color: #4d4d4d;">Click "Add Semester" to begin tracking your CGPA</div>';
+                return;
+            }
+
+            container.innerHTML = semesters.map((sem, index) => `
+                <div class="semester-card">
+                    <div class="semester-header">
+                        <h3>Semester ${index + 1}</h3>
+                        <button class="remove-btn" onclick="removeSemester(${sem.id})">Remove</button>
+                    </div>
+                    <div class="semester-inputs">
+                        <div class="input-group">
+                            <label>Semester GPA</label>
+                            <input 
+                                type="number" 
+                                class="course-input"
+                                placeholder="3.50"
+                                step="0.01"
+                                min="0"
+                                max="5"
+                                value="${sem.gpa}"
+                                onchange="updateSemester(${sem.id}, 'gpa', this.value)"
+                            />
+                        </div>
+                        <div class="input-group">
+                            <label>Total Credits</label>
+                            <input 
+                                type="number" 
+                                class="course-input"
+                                placeholder="15"
+                                step="0.5"
+                                min="0"
+                                value="${sem.credits}"
+                                onchange="updateSemester(${sem.id}, 'credits', this.value)"
+                            />
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            calculate();
+        }
+
+        function calculate() {
+            let totalPoints = 0;
+            let totalCredits = 0;
+
+            semesters.forEach(sem => {
+                const gpa = parseFloat(sem.gpa) || 0;
+                const credits = parseFloat(sem.credits) || 0;
+                totalPoints += gpa * credits;
+                totalCredits += credits;
+            });
+
+            const cgpa = totalCredits > 0 ? totalPoints / totalCredits : 0;
+
+            document.getElementById('cgpaDisplay').textContent = cgpa.toFixed(2);
+            document.getElementById('totalCredits').textContent = totalCredits.toFixed(1);
+            document.getElementById('totalSemesters').textContent = semesters.length;
+
+            updateTable();
+            localStorage.setItem('semesters', JSON.stringify(semesters));
+        }
+
+        function updateTable() {
+            const tbody = document.getElementById('tableBody');
+            let cumPoints = 0;
+            let cumCredits = 0;
+
+            tbody.innerHTML = semesters.map((sem, index) => {
+                const gpa = parseFloat(sem.gpa) || 0;
+                const credits = parseFloat(sem.credits) || 0;
+                cumPoints += gpa * credits;
+                cumCredits += credits;
+                const cumCGPA = cumCredits > 0 ? cumPoints / cumCredits : 0;
+
+                return `
+                    <tr>
+                        <td>Semester ${index + 1}</td>
+                        <td>${gpa.toFixed(2)}</td>
+                        <td>${credits.toFixed(1)}</td>
+                        <td><strong>${cumCGPA.toFixed(2)}</strong></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Load saved data
+        const saved = localStorage.getItem('semesters');
+        if (saved) {
+            semesters = JSON.parse(saved);
+        }
+        render();
+    </script>
+</body>
+</html>
